@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Facility Zero</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <section class="topbar" aria-label="Header">
+        <div>
+          <p class="eyebrow">Practice Build</p>
+          <h1>Facility Zero</h1>
+        </div>
+        <div class="header-stats" aria-label="Overview">
+          <div class="header-stat">
+            <span>Mode</span>
+            <strong>Solo FPS</strong>
+          </div>
+          <div class="header-stat">
+            <span>Style</span>
+            <strong>Arcade</strong>
+          </div>
+          <div class="header-stat">
+            <span>Loop</span>
+            <strong>Waves</strong>
+          </div>
+        </div>
+      </section>
+
+      <section class="arena">
+        <div class="viewport">
+          <canvas id="renderCanvas" aria-label="3D first person shooter" tabindex="0"></canvas>
+
+          <div class="hud">
+            <div class="hud-top">
+              <div class="hud-cluster hud-cluster-left" aria-label="Core player stats">
+                <div class="hud-chip hud-chip-health">
+                  <span>Health</span>
+                  <strong id="health-value">100</strong>
+                </div>
+                <div class="hud-chip hud-chip-ammo">
+                  <span>Ammo</span>
+                  <strong id="ammo-value">24 / 96</strong>
+                </div>
+              </div>
+
+              <div class="status-pill">
+                <span class="eyebrow">Status</span>
+                <strong id="status-value">Click start to lock the mouse and enter the facility.</strong>
+              </div>
+
+              <div class="hud-cluster hud-cluster-right" aria-label="Run stats">
+                <div class="hud-chip">
+                  <span>Score</span>
+                  <strong id="score-value">0</strong>
+                </div>
+                <div class="hud-chip">
+                  <span>Kills</span>
+                  <strong id="kill-value">0</strong>
+                </div>
+                <div class="hud-chip hud-chip-secondary">
+                  <span>Bots</span>
+                  <strong id="enemy-value">4</strong>
+                </div>
+                <div class="hud-chip hud-chip-secondary">
+                  <span>FPS</span>
+                  <strong id="fps-value">60</strong>
+                </div>
+              </div>
+            </div>
+
+            <div class="hud-bottom">
+              <div class="control-stack" aria-label="Controls">
+                <p>WASD - MOVE</p>
+                <p>MOUSE - LOOK</p>
+                <p>LEFT CLICK - SHOOT</p>
+                <p>R - RELOAD</p>
+                <p>WHEEL / 1 2 3 - SWITCH</p>
+                <p>ESC - MENU</p>
+              </div>
+
+              <div class="weapon-loadout" id="weapon-loadout" aria-label="Weapon loadout">
+                <div class="weapon-slot weapon-slot-active" id="weapon-slot-0">
+                  <div class="weapon-slot-top">
+                    <span class="weapon-slot-index">1</span>
+                    <span class="weapon-slot-name" id="weapon-slot-name-0">RIFLE</span>
+                  </div>
+                  <div class="weapon-slot-icon"></div>
+                  <strong class="weapon-slot-ammo" id="weapon-slot-ammo-0">24 / 96</strong>
+                </div>
+                <div class="weapon-slot" id="weapon-slot-1">
+                  <div class="weapon-slot-top">
+                    <span class="weapon-slot-index">2</span>
+                    <span class="weapon-slot-name" id="weapon-slot-name-1">CARBINE</span>
+                  </div>
+                  <div class="weapon-slot-icon"></div>
+                  <strong class="weapon-slot-ammo" id="weapon-slot-ammo-1">30 / 120</strong>
+                </div>
+                <div class="weapon-slot" id="weapon-slot-2">
+                  <div class="weapon-slot-top">
+                    <span class="weapon-slot-index">3</span>
+                    <span class="weapon-slot-name" id="weapon-slot-name-2">BRUISER</span>
+                  </div>
+                  <div class="weapon-slot-icon"></div>
+                  <strong class="weapon-slot-ammo" id="weapon-slot-ammo-2">18 / 72</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="crosshair" id="crosshair" aria-hidden="true">
+            <span class="crosshair-line crosshair-top"></span>
+            <span class="crosshair-line crosshair-right"></span>
+            <span class="crosshair-line crosshair-bottom"></span>
+            <span class="crosshair-line crosshair-left"></span>
+          </div>
+
+          <div class="hit-marker" id="hit-marker" aria-hidden="true">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+
+          <div class="screen-flash" id="screen-flash" aria-hidden="true"></div>
+
+          <aside class="debug-panel" id="debug-panel" aria-live="polite">
+            <div class="debug-panel-title">Debug</div>
+            <pre class="debug-panel-body" id="debug-panel-body">Booting...</pre>
+          </aside>
+
+          <div class="overlay" id="overlay">
+            <div class="card menu-shell" id="menu-root">
+              <section class="menu-screen" id="screen-main">
+                <p class="eyebrow">Practice Build</p>
+                <h2>Facility Zero</h2>
+                <p class="menu-copy">
+                  Fast arcade wave survival.
+                </p>
+                <div class="menu-actions">
+                  <button id="play-button" type="button">Play</button>
+                </div>
+              </section>
+
+              <section class="menu-screen hidden" id="screen-loadout">
+                <p class="eyebrow">Loadout</p>
+                <h2>Loadout</h2>
+                <p class="menu-copy">
+                  Choose your starting primary. This selection is local for now, but the structure is ready to plug into future lobby loadouts.
+                </p>
+                <div class="loadout-layout">
+                  <div class="loadout-list" id="loadout-options" aria-label="Available weapons"></div>
+                  <div class="info-panel loadout-detail">
+                    <span class="info-label">Selected Primary</span>
+                    <strong id="loadout-weapon-name">Rifle</strong>
+                    <p class="menu-copy" id="loadout-weapon-description">
+                      Balanced automatic rifle with clean recoil and dependable damage.
+                    </p>
+                    <div class="weapon-stats">
+                      <div class="weapon-stat">
+                        <span class="info-label">Damage</span>
+                        <strong id="loadout-stat-damage">34</strong>
+                      </div>
+                      <div class="weapon-stat">
+                        <span class="info-label">Fire Rate</span>
+                        <strong id="loadout-stat-fire-rate">Fast</strong>
+                      </div>
+                      <div class="weapon-stat">
+                        <span class="info-label">Recoil</span>
+                        <strong id="loadout-stat-recoil">Low</strong>
+                      </div>
+                      <div class="weapon-stat">
+                        <span class="info-label">Reload</span>
+                        <strong id="loadout-stat-reload">1.24s</strong>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="menu-actions">
+                  <button id="loadout-play-button" type="button">Play With Loadout</button>
+                  <button id="loadout-back-button" type="button" class="button-secondary">Back</button>
+                </div>
+              </section>
+
+              <section class="menu-screen hidden" id="screen-settings">
+                <p class="eyebrow">Settings</p>
+                <h2>Settings</h2>
+                <p class="menu-copy">
+                  Lightweight placeholder settings screen for future client options like sensitivity, audio, and keybinds.
+                </p>
+                <div class="info-grid">
+                  <div class="info-panel">
+                    <span class="info-label">Look</span>
+                    <strong>Pointer Lock Active In Match</strong>
+                  </div>
+                  <div class="info-panel">
+                    <span class="info-label">Mode</span>
+                    <strong>Single-Player</strong>
+                  </div>
+                </div>
+                <div class="menu-actions">
+                  <button id="settings-back-button" type="button" class="button-secondary">Back</button>
+                </div>
+              </section>
+
+              <section class="menu-screen hidden" id="screen-lobby">
+                <p class="eyebrow">Future Lobby</p>
+                <h2>Lobby</h2>
+                <p class="menu-copy">
+                  Placeholder room flow for future multiplayer. The current build still launches a local single-player run only.
+                </p>
+                <div class="lobby-grid">
+                  <div class="info-panel">
+                    <span class="info-label">Room Code</span>
+                    <strong>FZRO-0000</strong>
+                  </div>
+                  <div class="info-panel">
+                    <span class="info-label">Status</span>
+                    <strong>Offline Placeholder</strong>
+                  </div>
+                </div>
+                <div class="lobby-actions">
+                  <button id="create-room-button" type="button">Create Room</button>
+                  <button id="join-room-button" type="button" class="button-secondary">Join Room</button>
+                </div>
+                <div class="player-slots">
+                  <div class="slot-card slot-card-active">
+                    <span class="info-label">Slot 1</span>
+                    <strong>You</strong>
+                  </div>
+                  <div class="slot-card">
+                    <span class="info-label">Slot 2</span>
+                    <strong>Open</strong>
+                  </div>
+                  <div class="slot-card">
+                    <span class="info-label">Slot 3</span>
+                    <strong>Open</strong>
+                  </div>
+                  <div class="slot-card">
+                    <span class="info-label">Slot 4</span>
+                    <strong>Open</strong>
+                  </div>
+                </div>
+                <div class="menu-actions">
+                  <button id="lobby-solo-button" type="button">Start Solo Run</button>
+                  <button id="lobby-back-button" type="button" class="button-secondary">Back</button>
+                </div>
+              </section>
+
+              <section class="menu-screen hidden" id="screen-message">
+                <p class="eyebrow" id="overlay-eyebrow">Practice Build</p>
+                <h2 id="overlay-title">Facility Zero</h2>
+                <p id="overlay-text" class="menu-copy">
+                  Sweep the indoor test wing, stay mobile, and keep the rifle fed.
+                  Smooth movement and clean shots come first.
+                </p>
+                <div class="menu-actions">
+                  <button id="overlay-button" type="button">Start Run</button>
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script src="https://cdn.babylonjs.com/babylon.js"></script>
+    <script type="module" src="game.js"></script>
+  </body>
+</html>
