@@ -5,6 +5,7 @@ import { Level } from "./level.js"
 import { PlayerController } from "./player.js"
 import { Rifle } from "./weapon.js"
 import { EnemyManager } from "./enemies.js"
+import { TeleportAbility } from "./teleport.js"
 import { LOADOUT_CONFIG, LOOP_CONFIG } from "./config.js"
 
 export function bootstrapGame() {
@@ -65,6 +66,7 @@ export function bootstrapGame() {
     LOADOUT_CONFIG.defaultPrimaryWeaponId,
     LOADOUT_CONFIG.primaryWeaponIds
   )
+  const teleport = new TeleportAbility(scene, player, input, level)
   scene.activeCamera = player.camera
 
   let appState = APP_STATES.menu
@@ -117,6 +119,7 @@ export function bootstrapGame() {
     player.reset(level.getPlayerSpawn())
     enemies.reset()
     weapon.reset()
+    teleport.reset()
     input.resetTransientState()
     runState = createRunState()
     debugState.lastFrameNote = "scenario reset"
@@ -209,6 +212,11 @@ export function bootstrapGame() {
       return "Click the viewport to relock the mouse."
     }
 
+    const teleportStatus = teleport.getStatusText()
+    if (teleportStatus) {
+      return teleportStatus
+    }
+
     if (weapon.isReloading()) {
       return "Reloading rifle."
     }
@@ -254,9 +262,10 @@ export function bootstrapGame() {
 
         player.update(dt)
         runState.bestWave = Math.max(runState.bestWave, enemies.getWave())
+        teleport.update(dt, true)
 
         const weaponResult = weapon.update(dt, {
-          active: true,
+          active: !teleport.blocksWeaponInput(),
           input,
           player,
           enemies,
@@ -305,6 +314,7 @@ export function bootstrapGame() {
           showDeathOverlay()
         }
       } else {
+        teleport.update(dt, false)
         weapon.update(dt, {
           active: false,
           input,
